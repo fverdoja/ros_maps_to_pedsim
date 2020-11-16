@@ -130,8 +130,8 @@ def scenario_from_map(map_image, map_metadata):
             if ~is_free and np.any(window) and np.any(~window):
                 # conversion between world coordinates and pixel coordinates
                 # (x and y coordinates are inverted, and y is also flipped)
-                world_x = y * resolution
-                world_y = - x * resolution - 2 * origin[1]
+                world_x = y * resolution + resolution / 2
+                world_y = - (x * resolution + resolution / 2 + 2 * origin[1])
 
                 add_pixel_obstacle(scenario, world_x, world_y)
                 map_walls[x, y] = True
