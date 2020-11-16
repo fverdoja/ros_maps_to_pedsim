@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ros_maps_to_pedsim</name>
+  <version>0.0.0</version>
+  <description>
+    This package converts maps in ROS format (as defined by map_server) to Pedsim scenarios
+  </description>
+
+  <author email="francesco.verdoja@aalto.fi">Francesco Verdoja</author>
+  
+  <maintainer email="francesco.verdoja@aalto.fi">Francesco Verdoja</maintainer>
+
+  <license>BSD</license>
+
+  <!-- <url type="website">http://wiki.ros.org/ros_maps_to_pedsim</url> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  
+  <build_export_depend>rospy</build_export_depend>
+  
+  <exec_depend>rospy</exec_depend>
+
+</package>
