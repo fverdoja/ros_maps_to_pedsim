@@ -56,18 +56,23 @@ def add_agent(scenario, x, y, waypoints, n=2, dx=0.5, dy=0.5):
     agent.set('n', str(n))
     agent.set('dx', str(dx))
     agent.set('dy', str(dy))
-    for id in waypoints.keys():
+    for id in waypoints:
         addwaypoint = xml.SubElement(agent, 'addwaypoint')
         addwaypoint.set('id', str(id))
 
 
-def add_waypoints_and_agent(scenario, waypoints, num_agents):
-    """Adds to a scenario a set of waypoints and n agents going through them"""
+def add_waypoints_and_agent(scenario, agents_info):
+    """Adds to a scenario a set of waypoints and agents going through them"""
+    waypoints = agents_info["waypoints"]
     for id in waypoints.keys():
         w = waypoints[id]
         add_waypoint(scenario, id, w[0], w[1], w[2])
-    add_agent(scenario, waypoints[waypoints.keys()[-1]][0],
-              waypoints[waypoints.keys()[-1]][1], waypoints, n=num_agents)
+
+    agents_keys = agents_info.keys()
+    agents_keys.remove('waypoints')
+    for key in agents_keys:
+        agent = agents_info[key]
+        add_agent(scenario, agent['x'], agent['y'], agent['w'], n=agent['n'])
 
 
 def add_obstacle(scenario, x1, y1, x2, y2):
@@ -157,10 +162,9 @@ if __name__ == '__main__':
     map_name = rospy.get_param("~map_name", "map.yaml")
     scenario_path = rospy.get_param("~scenario_path", ".")
     scenario_name = rospy.get_param("~scenario_name", "scene.xml")
-
-    num_agents = rospy.get_param("~num_agents", 2)
-    waypoints_path = rospy.get_param("~waypoints_path", ".")
-    waypoints_name = rospy.get_param("~waypoints_name", "waypoints.yaml")
+    add_agents = rospy.get_param("~add_agents", True)
+    agents_info_path = rospy.get_param("~agents_info_path", ".")
+    agents_info_name = rospy.get_param("~agents_info_name", "agents.yaml")
 
     with open(os.path.join(map_path, map_name)) as file:
         map_metadata = yaml.safe_load(file)
@@ -173,13 +177,14 @@ if __name__ == '__main__':
 
     scenario, map_walls = scenario_from_map(map_image, map_metadata)
 
-    if num_agents > 0:
-        with open(os.path.join(waypoints_path, waypoints_name)) as file:
-            waypoints = yaml.safe_load(file)
-        add_waypoints_and_agent(scenario, waypoints, num_agents)
-
     # uncomment for a visualization of where the obstacles have been placed
     # io.imsave(os.path.join(scenario_path, 'walls.png'), map_walls*255)
+
+    if add_agents:
+        with open(os.path.join(agents_info_path, agents_info_name)) as file:
+            agents_info = yaml.safe_load(file)
+            print(agents_info)
+        add_waypoints_and_agent(scenario, agents_info)
 
     print("Writing scene in " + os.path.join(scenario_path, scenario_name)
           + "...")

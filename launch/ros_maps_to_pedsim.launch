@@ -3,18 +3,19 @@
   <arg name="map_name" default="map.yaml"/>
   <arg name="scenario_path" default="$(arg map_path)"/>
   <arg name="scenario_name" default="scene.xml"/>
-  <arg name="num_agents" default="2"/>
-  <arg name="waypoints_path" default="$(arg map_path)"/>
-  <arg name="waypoints_name" default="waypoints.yaml"/>
+  
+  <arg name="add_agents" default="true"/>
+  <arg name="agents_info_path" default="$(arg map_path)"/>
+  <arg name="agents_info_name" default="agents.yaml"/>
 
   <node name="ros_maps_to_pedsim" pkg="ros_maps_to_pedsim" type="ros_maps_to_pedsim.py" output="screen">
     <param name="map_path" value="$(arg map_path)" type="string"/>
     <param name="map_name" value="$(arg map_name)" type="string"/>
     <param name="scenario_path" value="$(arg scenario_path)" type="string"/>
     <param name="scenario_name" value="$(arg scenario_name)" type="string"/>
-    <param name="num_agents" value="$(arg num_agents)" type="int"/>
-    <param name="waypoints_path" value="$(arg waypoints_path)" type="string"/>
-    <param name="waypoints_name" value="$(arg waypoints_name)" type="string"/>
+    <param name="add_agents" value="$(arg add_agents)" type="bool"/>
+    <param name="agents_info_path" value="$(arg agents_info_path)" type="string"/>
+    <param name="agents_info_name" value="$(arg agents_info_name)" type="string"/>
   </node>
 
 </launch>
