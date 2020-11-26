@@ -56,16 +56,18 @@ def add_agent(scenario, x, y, waypoints, n=2, dx=0.5, dy=0.5):
     agent.set('n', str(n))
     agent.set('dx', str(dx))
     agent.set('dy', str(dy))
-    for w in waypoints:
+    for id in waypoints.keys():
         addwaypoint = xml.SubElement(agent, 'addwaypoint')
-        addwaypoint.set('id', str(w[0]))
+        addwaypoint.set('id', str(id))
 
 
-def add_waypoints_and_agent(scenario, waypoints):
-    """Adds to a scenario a set of waypoints and an agent going through them"""
-    for w in waypoints:
-        add_waypoint(scenario, w[0], w[1], w[2], w[3])
-    add_agent(scenario, waypoints[-1][1], waypoints[-1][2], waypoints)
+def add_waypoints_and_agent(scenario, waypoints, num_agents):
+    """Adds to a scenario a set of waypoints and n agents going through them"""
+    for id in waypoints.keys():
+        w = waypoints[id]
+        add_waypoint(scenario, id, w[0], w[1], w[2])
+    add_agent(scenario, waypoints[waypoints.keys()[-1]][0],
+              waypoints[waypoints.keys()[-1]][1], waypoints, n=num_agents)
 
 
 def add_obstacle(scenario, x1, y1, x2, y2):
@@ -77,9 +79,10 @@ def add_obstacle(scenario, x1, y1, x2, y2):
     obstacle.set('y2', str(y2))
 
 
-def add_pixel_obstacle(scenario, x, y):
+def add_pixel_obstacle(scenario, x, y, resolution):
     """Adds to a scenario a 1x1 obstacle at location (x, y)"""
-    add_obstacle(scenario, x, y, x, y)
+    add_obstacle(scenario, x + resolution / 2, y - resolution / 2,
+                 x - resolution / 2, y + resolution / 2)
 
 
 def scenario_from_map(map_image, map_metadata):
@@ -99,7 +102,6 @@ def scenario_from_map(map_image, map_metadata):
                 map where obstacles have been placed
     """
     resolution = map_metadata['resolution']
-    origin = map_metadata['origin']
     negate = map_metadata['negate']
     free_thresh = map_metadata['free_thresh'] * 255
 
@@ -130,10 +132,10 @@ def scenario_from_map(map_image, map_metadata):
             if ~is_free and np.any(window) and np.any(~window):
                 # conversion between world coordinates and pixel coordinates
                 # (x and y coordinates are inverted, and y is also flipped)
-                world_x = y * resolution + resolution / 2
-                world_y = - (x * resolution + resolution / 2 + 2 * origin[1])
+                world_x = y * resolution
+                world_y = - (x - sz[0]) * resolution
 
-                add_pixel_obstacle(scenario, world_x, world_y)
+                add_pixel_obstacle(scenario, world_x, world_y, resolution)
                 map_walls[x, y] = True
 
     return scenario, map_walls
@@ -156,6 +158,10 @@ if __name__ == '__main__':
     scenario_path = rospy.get_param("~scenario_path", ".")
     scenario_name = rospy.get_param("~scenario_name", "scene.xml")
 
+    num_agents = rospy.get_param("~num_agents", 2)
+    waypoints_path = rospy.get_param("~waypoints_path", ".")
+    waypoints_name = rospy.get_param("~waypoints_name", "waypoints.yaml")
+
     with open(os.path.join(map_path, map_name)) as file:
         map_metadata = yaml.safe_load(file)
 
@@ -167,15 +173,10 @@ if __name__ == '__main__':
 
     scenario, map_walls = scenario_from_map(map_image, map_metadata)
 
-    # the next two lines add a group of agents moving through the scenario;
-    # these waypoints work in my testing map, remove or substitute with yours
-    waypoints = [
-        ['w1', 18, 9, 0.2],
-        ['w2', 20, 8, 0.2],
-        ['w3', 21.5, 7.5, 0.2],
-        ['w4', 18, 8.5, 0.2]
-    ]
-    add_waypoints_and_agent(scenario, waypoints)
+    if num_agents > 0:
+        with open(os.path.join(waypoints_path, waypoints_name)) as file:
+            waypoints = yaml.safe_load(file)
+        add_waypoints_and_agent(scenario, waypoints, num_agents)
 
     # uncomment for a visualization of where the obstacles have been placed
     # io.imsave(os.path.join(scenario_path, 'walls.png'), map_walls*255)
