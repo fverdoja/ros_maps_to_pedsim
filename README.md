@@ -77,6 +77,9 @@ agent_2:
   w: [waypoint_id_2, waypoint_id_3]
 ```
 
+Optionally, values for `type`, `dx` and `dy` can be provided for each agent. If
+no value is provided, by default `type: 1`, `dx: 0.5` and `dy: 0.5`.
+
 The script expects at least the `waypoints` header and another header
 representing one agent.
 
