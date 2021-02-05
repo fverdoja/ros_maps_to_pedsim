@@ -48,7 +48,7 @@ def add_waypoint(scenario, id, x, y, r):
     waypoint.set('r', str(r))
 
 
-def add_agent(scenario, x, y, waypoints, n=2, dx=0.5, dy=0.5):
+def add_agent(scenario, x, y, waypoints, n=2, dx=0.5, dy=0.5, type=1):
     """Adds to a scenario n agents going from (x, y) through the waypoints"""
     agent = xml.SubElement(scenario, 'agent')
     agent.set('x', str(x))
@@ -56,6 +56,7 @@ def add_agent(scenario, x, y, waypoints, n=2, dx=0.5, dy=0.5):
     agent.set('n', str(n))
     agent.set('dx', str(dx))
     agent.set('dy', str(dy))
+    agent.set('type', str(type))
     for id in waypoints:
         addwaypoint = xml.SubElement(agent, 'addwaypoint')
         addwaypoint.set('id', str(id))
@@ -72,7 +73,11 @@ def add_waypoints_and_agent(scenario, agents_info):
     agents_keys.remove('waypoints')
     for key in agents_keys:
         agent = agents_info[key]
-        add_agent(scenario, agent['x'], agent['y'], agent['w'], n=agent['n'])
+        agent_dx = agent['dx'] if 'dx' in agent else 0.5
+        agent_dy = agent['dy'] if 'dy' in agent else 0.5
+        agent_type = agent['type'] if 'type' in agent else 1
+        add_agent(scenario, agent['x'], agent['y'], agent['w'], n=agent['n'],
+                  dx=agent_dx, dy=agent_dy, type=agent_type)
 
 
 def add_obstacle(scenario, x1, y1, x2, y2):
