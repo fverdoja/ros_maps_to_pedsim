@@ -29,6 +29,10 @@ The launchfile takes the following arguments:
 
 * `scenario_name` (default: `scene.xml`): name of the generated scenario file
 
+* `use_map_origin` (default: `false`): if `true` reads the map origin from the
+  map metadata file, otherwise sets it to `[0.0, 0.0, 0.0]`. Integration with
+  `pedsim_ros` works better in the latter case.
+
 * `add_agents` (default: `true`): if `true`, agents will be added to the
   scenario according to the agents YAML file given by `agents_info_path` and
   `agents_info_name`; if `false`, no agents or waypoints are added to the
