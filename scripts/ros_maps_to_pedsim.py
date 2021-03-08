@@ -107,7 +107,7 @@ def scenario_from_map(map_image, map_metadata, use_map_origin=False):
                 file
             use_map_origin (bool): if True reads the map origin from
                 map_metadata, otherwise sets it to [0, 0, 0] (default).
-                Integration with ped_sim_ros works better in the latter case.
+                Integration with pedsim_ros works better in the latter case.
 
         Returns:
             scenario (ElementTree): a pedsim scenario as xml element tree
