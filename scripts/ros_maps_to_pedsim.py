@@ -95,7 +95,7 @@ def add_pixel_obstacle(scenario, x, y, resolution):
                  x - resolution / 2, y + resolution / 2)
 
 
-def scenario_from_map(map_image, map_metadata):
+def scenario_from_map(map_image, map_metadata, use_map_origin=False):
     """
     Builds a pedsim scenario having obstacles to separate free space in the map
     from unknown and occupied space. Everything below 'free_thresh' (in the map
@@ -105,6 +105,9 @@ def scenario_from_map(map_image, map_metadata):
             map_image (array_like): the map ternary image
             map_metadata (dictionary): the metadata extracted from the map YAML
                 file
+            use_map_origin (bool): if True reads the map origin from
+                map_metadata, otherwise sets it to [0, 0, 0] (default).
+                Integration with ped_sim_ros works better in the latter case.
 
         Returns:
             scenario (ElementTree): a pedsim scenario as xml element tree
@@ -114,6 +117,7 @@ def scenario_from_map(map_image, map_metadata):
     resolution = map_metadata['resolution']
     negate = map_metadata['negate']
     free_thresh = map_metadata['free_thresh'] * 255
+    origin = map_metadata['origin'] if use_map_origin else [0.0, 0.0, 0.0]
 
     # ROS maps have white (255) as free space for visualization, colors need to
     # be inverted before comparing with thresholds (if negate == 0)
@@ -142,8 +146,8 @@ def scenario_from_map(map_image, map_metadata):
             if ~is_free and np.any(window) and np.any(~window):
                 # conversion between world coordinates and pixel coordinates
                 # (x and y coordinates are inverted, and y is also flipped)
-                world_x = y * resolution
-                world_y = - (x - sz[0]) * resolution
+                world_x = origin[0] + y * resolution
+                world_y = origin[1] - (x - sz[0]) * resolution
 
                 add_pixel_obstacle(scenario, world_x, world_y, resolution)
                 map_walls[x, y] = True
@@ -167,6 +171,7 @@ if __name__ == '__main__':
     map_name = rospy.get_param("~map_name", "map.yaml")
     scenario_path = rospy.get_param("~scenario_path", ".")
     scenario_name = rospy.get_param("~scenario_name", "scene.xml")
+    use_map_origin = rospy.get_param("~use_map_origin", False)
     add_agents = rospy.get_param("~add_agents", True)
     agents_info_path = rospy.get_param("~agents_info_path", ".")
     agents_info_name = rospy.get_param("~agents_info_name", "agents.yaml")
@@ -180,7 +185,8 @@ if __name__ == '__main__':
           + " with metadata:")
     print(map_metadata)
 
-    scenario, map_walls = scenario_from_map(map_image, map_metadata)
+    scenario, map_walls = scenario_from_map(
+        map_image, map_metadata, use_map_origin)
 
     # uncomment for a visualization of where the obstacles have been placed
     # io.imsave(os.path.join(scenario_path, 'walls.png'), map_walls*255)
